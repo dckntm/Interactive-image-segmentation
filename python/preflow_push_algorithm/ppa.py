@@ -1,17 +1,20 @@
 import numpy as np
-import queue 
+import queue
+import time 
 
 
 graph = np.array([])
+graph_ = np.array([])
 straight = np.array([])
 reversed = np.array([])
  
 vertices = list()
  
-height = np.array([])
-excess = np.array([])
+height = []
+excess = []
  
 capacity = list()
+capacity_ = list()
  
 source = -1
 runoff = -1
@@ -36,7 +39,7 @@ def bfs():
     used[runoff] = True
     dist[runoff] = 0
  
-    while not q.empty():
+    while  q:
         for i in reversed[q.queue[0]]:
             if not used[i] and get_value(capacity, i, q.queue[0]):
                 used[i] = True
@@ -47,7 +50,7 @@ def bfs():
     used = np.full(len(graph), False)
     used[source] = True
     dist1[source] = 0
-    while not q.empty():
+    while  q:
         for i in straight[q.queue[0]]:
             if not used[i] and get_value(capacity, i, q.queue[0]):
                 used[i] = True
@@ -70,7 +73,7 @@ def f():
     global opt
     while len(vertices) != 0:
         if opt == m:
-            bfs()
+            #bfs()
             opt = 0
         tmp = vertices[0]
         for i in graph[tmp[0]]:
@@ -82,11 +85,25 @@ def f():
                     add_elem(vertices, [i, height[i]])
                 set_value(capacity, tmp[0], i, get_value(capacity, tmp[0], i) - flow)
                 set_value(capacity, i, tmp[0], get_value(capacity, i, tmp[0]) + flow)
-        
+
+        for i in graph_[tmp[0]]:
+            if height[i] == height[tmp[0]] - 1:
+                flow = min(excess[tmp[0]],get_value(capacity_,tmp[0],i))
+                excess[tmp[0]] -= flow
+                excess[i] += flow
+                if flow != 0 and i != runoff and excess[i] == flow:
+                  add_elem(vertices,[i,height[i]])
+                set_value(capacity_,tmp[0],i,get_value(capacity_,tmp[0],i) - flow)
+                set_value(capacity, i, tmp[0], get_value(capacity, i, tmp[0]) + flow)
+
         min_height = len(graph)
         for i in graph[tmp[0]]:
             if get_value(capacity, tmp[0], i) > 0:
                 min_height = min(min_height, height[i])
+
+        for i in graph_[tmp[0]]:
+            if get_value(capacity_,tmp[0],i) > 0:
+                min_height = min(min_height,height[i])
         
         vertices.remove(vertices[0])
         height[tmp[0]] = min_height + 1
@@ -125,8 +142,11 @@ if __name__ == '__main__':
     n, m = t.readline().split()
     n = int(n)
     m = int(m)
+    source = 0
+    runoff = n-1
 
     graph = [[] for i in range(n)]
+    graph_ = [[] for i in range(n)]
     straight = [[] for i in range(n)]
     reversed = [[] for i in range(n)]
 
@@ -138,13 +158,15 @@ if __name__ == '__main__':
         u = int(u)
         v = int(v)
         c = int(c)
+        if u == n or v == 1:
+            continue
 
         graph[u - 1].append(v - 1)
-        graph[v - 1].append(u - 1)
+        graph_[v - 1].append(u - 1)
         straight[u - 1].append(v - 1) 
         reversed[v - 1].append(u - 1)
         set_value(capacity, u - 1, v - 1, c)
-        set_value(capacity, v - 1, u - 1, 0)
+        set_value(capacity_, v - 1, u - 1, 0)
     
     t.close()
     
@@ -158,12 +180,15 @@ if __name__ == '__main__':
         excess[i] = get_value(capacity, source, i)
         if i != runoff:
             add_elem(vertices, [i, height[i]])
-        c1 = get_value(capacity, i, source)
+        c1 = get_value(capacity_, i, source)
         c2 = get_value(capacity, source, i)
         set_value(capacity, i, source, c2)
         set_value(capacity, source, i, c1)
     x = 0
+    start = time.time()
     f()
     print(excess[runoff])
+    print()
+    print('Time is', time.time() - start)
 
 

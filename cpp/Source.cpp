@@ -1,12 +1,3 @@
-/*
-4 5
-1 2 10000
-1 3 10000
-2 3 1
-3 4 10000
-2 4 10000
-*/
-
 #include <iostream>
 #include <vector>
 #include <set>
@@ -22,10 +13,10 @@ struct cmp {
 	}
 };
 
-vector<vector<int>> graph, straight, reversed;
+vector<vector<int>> graph, graph_, straight, reversed;
 multiset<pair<int, int>, cmp> vertices;
 vector<int> height, excess;
-map<pair<int, int>, int> capacity;
+map<pair<int, int>, int> capacity, capacity_;
 int source = -1, runoff = -1;
 int opt = 0;
 int n, m, u, v, c;
@@ -92,12 +83,28 @@ void f() {
 					vertices.insert(make_pair(i, height[i]));
 				}
 				capacity[make_pair(tmp.first, i)] -= flow;
+				capacity_[make_pair(i, tmp.first)] += flow;
+			}
+		}
+		for (auto i : graph_[tmp.first]) {
+			if (height[i] == height[tmp.first] - 1) {
+				int flow = min(excess[tmp.first], capacity_[make_pair(tmp.first, i)]);
+				excess[tmp.first] -= flow;
+				excess[i] += flow;
+				if (flow != 0 && i != runoff && excess[i] == flow) {
+					vertices.insert(make_pair(i, height[i]));
+				}
+				capacity_[make_pair(tmp.first, i)] -= flow;
 				capacity[make_pair(i, tmp.first)] += flow;
 			}
 		}
 		int min_height = graph.size();
 		for (auto i : graph[tmp.first]) {
 			if (capacity[make_pair(tmp.first, i)] > 0)
+				min_height = min(min_height, height[i]);
+		}
+		for (auto i : graph_[tmp.first]) {
+			if (capacity_[make_pair(tmp.first, i)] > 0)
 				min_height = min(min_height, height[i]);
 		}
 		vertices.erase(vertices.begin());
@@ -117,18 +124,22 @@ void f() {
 int main() {
 	cin >> n >> m;
 	graph.resize(n);
+	graph_.resize(n);
 	straight.resize(n);
 	reversed.resize(n);
 	height.resize(n, 0);
 	excess.resize(n, 0);
 	for (int i = 0; i < m; ++i) {
 		cin >> u >> v >> c;
+		if (u == n || v == 1){
+			continue;
+		}
 		graph[u - 1].push_back(v - 1);
-		graph[v - 1].push_back(u - 1);
+		graph_[v - 1].push_back(u - 1);
 		straight[u - 1].push_back(v - 1);
 		reversed[v - 1].push_back(u - 1);
 		capacity[make_pair(u - 1, v - 1)] = c;
-		capacity[make_pair(v - 1, u - 1)] = 0;
+		capacity_[make_pair(v - 1, u - 1)] = 0;
 	}
 	for (int i = 0; i < n; ++i) {
 		if (straight[i].size() == 0)
