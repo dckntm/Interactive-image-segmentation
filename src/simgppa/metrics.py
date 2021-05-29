@@ -1,9 +1,9 @@
 from PIL import Image
 
 
-def compare(reference: Image.Image, ouput: Image.Image) -> None:
+def compare(reference: Image.Image, output: Image.Image) -> None:
     h1, w2, img1 = reference.height, reference.width, reference.load()
-    h2, w2, img2 = ouput.height, ouput.width, ouput.load()
+    h2, w2, img2 = output.height, output.width, output.load()
 
     if (h1 != h2 or w2 != w2):
         raise Exception('Cannot compare following images')
