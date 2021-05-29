@@ -1,28 +1,43 @@
 import os
-from pathlib import Path
+import sys
 import unittest
+from pathlib import Path
 
 from PIL import Image
 from simgppa.img_processing import Pixel
-
-from simgppa.segmentation import Segmentation
 from simgppa.metrics import compare
-path = Path(os.path.abspath(__file__)).parent
+from simgppa.segmentation import Segmentation
 
+path = Path(os.path.abspath(__file__)).parent
 
 class Test_Segmentation(unittest.TestCase):
 
     def test_banana_1(self):
+        bg_pixels = []
+        obj_pixels = []
+
+        with open(os.path.join(sys.path[0],"tests/obj_pixels.txt"), 'r') as b:
+            data = b.read().splitlines()
+        for pixel in data:
+            x, y = pixel.split()
+            obj_pixels.append(Pixel(int(x), int(y)))
+        
+        with open(os.path.join(sys.path[0],"tests/bg_pixels.txt"), 'r') as b:
+            data = b.read().splitlines()
+        for pixel in data:
+            x, y = pixel.split()
+            bg_pixels.append(Pixel(int(x), int(y)))
+
         s = Segmentation(path.joinpath(
             'data/segmentation/images-320/banana1-gr-320.jpg'),
-            bg_pixels=[],
-            obj_pixels=[],
+            bg_pixels=bg_pixels,
+            obj_pixels=obj_pixels,
             lmbd=100,
             sgm=1.0,
             bw=True)
 
         s.save_img(path.joinpath(
-            'data/segmentation/output/banana1-gr-320.jpg'))
+            'data/segmentation/output/banana1-320.jpg'))
 
         reference = Image.open(path.joinpath(
             'data/segmentation/image-segments-320/banana1-320.jpg'
