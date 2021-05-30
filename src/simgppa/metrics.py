@@ -12,26 +12,31 @@ def compare(reference: Image.Image, output: Image.Image) -> None:
     bck_correct_pixels = 0
     obj_union_count = 0
 
-    for i in range(w2):
-        for j in range(h1):
-            pixel1 = img1[i, j]
-            pixel2 = img2[i, j]
+    with open('output.txt', 'w+') as out:
+        for i in range(w2):
+            for j in range(h1):
+                pixel1 = img1[i, j]
+                pixel2 = img2[i, j]
 
-            if (isinstance(pixel1, int) == True):
-                intensity1 = pixel1
-            else:
-                intensity1 = pixel1[0] + pixel1[1] + pixel1[2]
-            if (isinstance(pixel2, int) == True):
-                intensity2 = pixel2
-            else:
-                intensity2 = pixel2[0] + pixel2[1] + pixel2[2]
+                if (isinstance(pixel1, int) == True):
+                    intensity1 = pixel1
+                else:
+                    intensity1 = pixel1[0] + pixel1[1] + pixel1[2]
+                if (isinstance(pixel2, int) == True):
+                    intensity2 = pixel2
+                else:
+                    intensity2 = pixel2[0] + pixel2[1] + pixel2[2]
 
-            if (intensity1 > 0 and intensity2 > 0):
-                obj_correct_pixels += 1
-            if (intensity1 > 0 or intensity2 > 0):
-                obj_union_count += 1
-            if (intensity1 == 0 and intensity2 == 0):
-                bck_correct_pixels += 1
+                out.write(f'{i} {j} : {intensity1} : {intensity2}\n')
+
+                if (intensity1 > 0 and intensity2 > 0):
+                    obj_correct_pixels += 1
+
+                if (intensity1 > 0 or intensity2 > 0):
+                    obj_union_count += 1
+
+                if (intensity1 == 0 and intensity2 == 0):
+                    bck_correct_pixels += 1
 
     return \
         obj_correct_pixels / (w2 * h1), \
